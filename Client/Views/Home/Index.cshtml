@@ -1,0 +1,234 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div >
+    <div class="d-flex justify-content-center mt-5 mb-3">
+        <div class="d-flex justify-content-between" style="width: 60%; align-items: center;">
+            <h1>ToDo List</h1>
+
+            <button type="button" onclick="checkToken()" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                <i class="las la-plus"></i> Add new
+            </button>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center">
+        <div class="todo-body" id="todo-body">
+            
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Todo</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addTaskForm" class="mt-1">
+                    <div class="form-group">
+                        <label for="taskTitle">Title:</label>
+                        <input type="text" class="form-control" id="taskTitle" required>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <div class="form-group date-time">
+                            <label for="taskDate">Date:</label>
+                            <input type="date" class="form-control" id="taskDate" required>
+                        </div>
+                        <div class="form-group date-time">
+                            <label for="taskTime">Time:</label>
+                            <input type="time" class="form-control" id="taskTime" required>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center mt-3">
+                        <button type="button" class="btn btn-success px-4" onclick="addTodo();">Add Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function checkToken() {
+        var token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = "auth/login";
+        }
+    }
+    checkToken();
+
+    function onload() {
+        var userId = localStorage.getItem('userId');
+        var token = localStorage.getItem('token');
+
+        $.ajax({
+            type: "GET",
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            url: "https://localhost:7193/api/todos/" + userId,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                var todoBody = document.getElementById("todo-body");
+                todoBody.innerHTML = "";
+                for (let i = 0; i < data.length; i++) {
+                    var date = parseDateString(data[i].deadLine);
+                    var label =``;
+                    console.log(data[i]);
+                    if (data[i].expired) {
+                        label.replace("ms-4", "ms-4 text-danger");
+                    }
+                    else if (data[i].isCompleted) {
+                        label = `
+                            <input type="checkbox" id="ch${data[i].id}" checked onchange="labelClick(this)" style="width: 20px; height: 20px;">
+                            <label for= "ch${data[i].id}" class= "ms-4 text-decoration-line-through" > ${data[i].title} </label>
+                        `;
+                    } else {
+                        label = `
+                        <input type="checkbox" id="ch${data[i].id}" onchange="labelClick(this)" style="width: 20px; height: 20px;">
+                        <label for= "ch${data[i].id}" class= "ms-4" > ${data[i].title} </label>`;
+                    }
+
+
+                    var todo = `
+                        <div class="todo d-flex justify-content-between">
+                            <div class="d-flex" style="align-items: center;">
+                                    ${label}
+                            </div>
+                            <div class="controls">
+                                    <span class="me-4">${date}</span>
+                                        <a onclick="deleteTodo(this)" id="a${data[i].id}" class="text-danger"><i class="las la-trash"></i></a>
+                            </div>
+                        </div>
+                        <hr>
+                    `;
+                    todoBody.innerHTML += todo;
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log("AJAX Error:", textStatus, errorThrown);
+            }
+        });
+    }
+    onload();
+
+    function parseDateString(dateString) {
+        var dateTime = new Date(dateString);
+
+        // Get individual components
+        var day = dateTime.getDate().toString().padStart(2, '0');
+        var month = (dateTime.getMonth() + 1).toString().padStart(2, '0'); // Month is zero-based
+        var year = dateTime.getFullYear();
+        var hours = dateTime.getHours().toString().padStart(2, '0');
+        var minutes = dateTime.getMinutes().toString().padStart(2, '0');
+
+        // Construct the formatted string
+        var formattedDateTime = day + '/' + month + '/' + year + '&nbsp;&nbsp; ' + hours + ':' + minutes;
+
+        return formattedDateTime;
+    }
+
+    function addTodo() {
+        var title = document.getElementById("taskTitle").value;
+        var data = {
+            title: title,
+            deadLine: convertToISOStringFormat(),
+            userId: localStorage.getItem('userId')
+        };
+
+        var userId = localStorage.getItem('userId');
+        var token = localStorage.getItem('token');
+
+        //call api
+        $.ajax({
+            type: "POST",
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            url: "https://localhost:7193/api/todos",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(data),
+            success: function (data) {
+                window.location.href = "/";
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log("AJAX Error:", textStatus, errorThrown);
+            }
+        });
+    }
+
+    function convertToISOStringFormat() {
+        var date = document.getElementById("taskDate").value;
+        var time = document.getElementById("taskTime").value;
+        var dateTimeString = date + " " + time;
+
+        // Create a Date object from the date and time string
+        var dateTime = new Date(dateTimeString);
+
+        // Get individual components
+        var year = dateTime.getFullYear();
+        var month = (dateTime.getMonth() + 1).toString().padStart(2, '0'); // Month is zero-based
+        var day = dateTime.getDate().toString().padStart(2, '0');
+        var hours = dateTime.getHours().toString().padStart(2, '0');
+        var minutes = dateTime.getMinutes().toString().padStart(2, '0');
+        var seconds = dateTime.getSeconds().toString().padStart(2, '0');
+        var milliseconds = dateTime.getMilliseconds().toString().padStart(3, '0');
+
+        // Create the formatted string in "2024-01-23T06:13:35.162Z" format
+        var formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
+
+        return formattedDateTime;
+    }
+
+    function labelClick(element) {
+        var id = element.id;
+        var label = document.querySelector(`label[for=${id}]`);
+        if (element.checked) {
+            label.style.textDecoration = "line-through";
+        } else {
+            label.style.textDecoration = "none";
+        }
+        var token = localStorage.getItem('token');
+
+        $.ajax({
+            type: "PATCH",
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            url: "https://localhost:7193/api/todos/" + id.replace("ch", ""),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                onload();
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log("AJAX Error:", textStatus, errorThrown);
+            }
+        });
+    }
+
+    function deleteTodo(element) {
+        var token = localStorage.getItem('token');
+        var id = element.id.replace("a", "");
+        $.ajax({
+            type: "DELETE",
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            url: "https://localhost:7193/api/todos/" + id,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                onload();
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log("AJAX Error:", textStatus, errorThrown);
+            }
+        });
+    }
+
+</script>

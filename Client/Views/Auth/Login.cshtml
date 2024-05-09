@@ -1,0 +1,56 @@
+﻿<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-6">
+        <section>
+            <form id="account" method="post">
+                <h2 class="mt-5 text-center">Login your account</h2>
+                <hr />
+                <div class="form-floating mb-3">
+                    <input id="email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                    <label class="form-label">Email</label>
+                 </div>
+                <div class="form-floating mb-3">
+                    <input id="password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                    <label class="form-label">Password</label>
+                </div>
+                <div>
+                    <button id="login-submit" type="button" onclick="login()" class="w-100 btn btn-lg btn-primary">Log in</button>
+                </div>
+                <div>
+                    <p>
+                        <a >Register as a new user</a>
+                    </p>
+                </div>
+            </form>
+        </section>
+    </div>
+    <div class="col-md-3"></div>
+</div>
+
+<script>
+    function login() {
+        var email = document.getElementById("email").value;
+        var password = document.getElementById("password").value;
+        var data = {
+            email : email,
+            password : password
+        };
+        $.ajax({
+            type: "POST",
+            url: "https://localhost:7193/api/auth/login",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                if(data) {
+                    localStorage.setItem("token", data.token);
+                    localStorage.setItem("userId", data.userId);
+                    window.location.href = "/";
+                }
+            },
+            failure: function (errMsg) {
+                console.log(errMsg);
+            }
+        });
+    }
+</script>

@@ -1,0 +1,55 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+body {
+    background-color: rgb(246, 246, 246);
+    user-select: none;
+}
+
+.date-time {
+    width: 200px;
+}
+
+.todo-body {
+    width: 60%;
+    background-color: white;
+    border-radius: 12px;
+    padding: 30px 50px;
+    align-items: center;
+}
+
+.controls a {
+    font-size: 22px;
+    margin: 0 2px;
+    padding: 2px 5px;
+}
+
+    .controls a:hover {
+        background-color: rgb(235, 235, 235);
+        border-radius: 3px;
+    }
+
+.todo {
+    font-size: 18px;
+    align-items: center;
+}

@@ -1,0 +1,9 @@
+﻿global using Application.DTOs.TodoDtos;
+global using Application.Interfaces;
+global using AutoMapper;
+global using Domain.Entities;
+global using Domain.Entities.Identity;
+global using FluentValidation;
+global using Infrastructure.Repository;
+global using Microsoft.AspNetCore.Identity;
+global using Application.DTOs.ApplicationUserDtos;
